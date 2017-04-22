@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="windows-1251"?>
+
+<project name="Chain_search" default="help" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+
+  <!-- CLEANUP -->
+  <target name="clean">
+    <delete includeemptydirs="true" failonerror="false">
+      <fileset dir="${basedir}\build" includes="**/*" />
+    </delete>
+    <delete includeemptydirs="true" failonerror="false">
+      <fileset dir="${basedir}\install" includes="**/*" />
+    </delete>
+  </target>
+
+  <!-- BUILD DEBUG VERSION -->
+  <target name="build-debug">
+    <property file="local.properties"/>
+
+    <mkdir dir="${basedir}/build/debug"/>
+
+   <!--NOTE: exec will add quotes to every argumets with spaces-->
+    <exec executable="cmake" osfamily="windows" dir="${basedir}/build/debug" failonerror="yes">
+      <arg value="../../src" />
+      <arg value="-DCMAKE_INSTALL_PREFIX=../../install" />
+      <arg value="-G" />
+      <arg value="Visual Studio 14 2015 Win64" />
+    </exec>
+
+    <exec executable="msbuild" osfamily="windows" dir="${basedir}/build/debug" failonerror="yes">
+      <arg value="/p:Configuration=Debug" />
+      <arg value="/p:Platform=x64" />
+      <arg value="INSTALL.vcxproj" />
+    </exec>
+
+    <!-- Unix project generation -->
+    <exec executable="cmake" osfamily="unix" dir="${basedir}/build/debug" failonerror="yes">
+      <arg value="../../src" />
+      <arg value="-DCMAKE_BUILD_TYPE=Debug" />
+      <arg value="-DCMAKE_INSTALL_PREFIX=../../install" />
+      <arg value="-G" />
+      <arg value="Unix Makefiles" />
+    </exec>
+
+    <!-- Unix project build & install -->
+    <exec executable="make" osfamily="unix" dir="${basedir}/build/debug" failonerror="yes">
+      <arg value="install" />
+    </exec>
+
+  </target>
+
+  <!-- BUILD RELEASE VERSION -->
+  <target name="build-release">
+    <property file="local.properties"/>
+
+    <mkdir dir="${basedir}/build/release"/>
+
+   <!--NOTE: exec will add quotes to every argumets with spaces-->
+    <exec executable="cmake" osfamily="windows" dir="${basedir}/build/release" failonerror="yes">
+      <arg value="../../src" />
+      <arg value="-DCMAKE_INSTALL_PREFIX=../../install" />
+      <arg value="-G" />
+      <arg value="Visual Studio 14 2015 Win64" />
+    </exec>
+
+    <exec executable="msbuild" osfamily="windows" dir="${basedir}/build/release" failonerror="yes">
+      <arg value="/p:Configuration=Release" />
+      <arg value="/p:Platform=x64" />
+      <arg value="INSTALL.vcxproj" />
+    </exec>
+
+    <!-- Unix project generation -->
+    <exec executable="cmake" osfamily="unix" dir="${basedir}/build/release" failonerror="yes">
+      <arg value="../../src" />
+      <arg value="-DCMAKE_BUILD_TYPE=Release" />
+      <arg value="-DCMAKE_INSTALL_PREFIX=../../install" />
+      <arg value="-G" />
+      <arg value="Unix Makefiles" />
+    </exec>
+    <!-- Unix project build & install -->
+    <exec executable="make" osfamily="unix" dir="${basedir}/build/release" failonerror="yes">
+      <arg value="install" />
+    </exec>
+
+  </target>
+
+  <!-- CHECKING OS TYPE -->
+  <condition property="isWindows">
+    <os family="windows" />
+  </condition>
+  <condition property="isUnix">
+    <os family="unix" />
+  </condition>
+  <target name="check-windows" if="isWindows">
+    <property name="target.os" value="win64" />
+  </target>
+  <target name="check-linux" if="isUnix">
+    <property name="target.os" value="ppc64" />
+  </target>
+  <target name="check-os" depends="check-windows, check-linux" />
+
+  <!-- META-TARGETS -->
+  <target name="help" depends="check-os">
+    <echo message="Product: Chain_search" />
+    <echo message="Targets: clean, build-debug, build-release, [local]" />
+  </target>
+  <target name="local" depends="check-os, clean, build-debug, build-release" />
+</project>
